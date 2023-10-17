@@ -45,7 +45,7 @@ process.on('uncaughtException', function (err) {
 
 app.use('/*', cors())
 
-app.get('/', (c) => c.text('This is the "Where Can I Play?" backend. It is implemented using Hono and nodejs.'))
+app.get('/', (c) => c.text('This is the "Where Can I Play?" backend. It is implemented using Hono and nodejs. Check it out.'))
 
 app.post('/arcades', async(c) => {
   console.log('hello')
