@@ -6,9 +6,6 @@ import { serve } from '@hono/node-server'
 import { db, getData } from './firebase';
 import { gamesApiFetch, getIgdbToken } from './utils';
 
-const hostname = "::";
-const port = 3000;
-
 const igbdClientID = process.env.IGDB_ID;
 const igbdClientSecret = process.env.IGDB_SECRET;
 
@@ -80,4 +77,13 @@ app.post('/game/:id', async(c) => {
   return c.json(response[0]);
 })
 
-serve(app)
+let port = 3000;
+ 
+if (process.env.PORT) {
+  port = parseInt(process.env.PORT);
+}
+
+serve({
+  fetch: app.fetch,
+  port: port
+})
