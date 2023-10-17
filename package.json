@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "tsx src/index.ts",
-    "postinstall": "tsc",
+    "postinstall": "tsc"
   },
   "dependencies": {
     "@hono/node-server": "^1.2.0",
