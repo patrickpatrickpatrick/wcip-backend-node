@@ -10,7 +10,7 @@ const igbdClientID = process.env.IGDB_ID;
 const igbdClientSecret = process.env.IGDB_SECRET;
 
 if (!(igbdClientID && igbdClientSecret)) {
-  throw "Provide a clientID and clientSecret for IGDB."
+  throw "Provide a clientID and clientSecret for IGDBB."
 }
 
 const accessTokenGetter = async (c) => {
