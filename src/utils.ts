@@ -56,7 +56,7 @@ export const gamesApiFetch = async (clientId: string, accessToken: string, query
 
   const coversIds = gameResponse.results.filter(x => x.cover).map(x => x.cover).join(',')
   const coverQuery = `fields url; where id = (${coversIds});`
-  let coverResponse = [];
+  let coverResponse;
 
   if (coversIds && coversIds.length) {
     coverResponse = await fetch(
