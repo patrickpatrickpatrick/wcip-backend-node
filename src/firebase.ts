@@ -1,12 +1,12 @@
-import { initializeApp } from 'firebase-admin/app';
+import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 let firebaseConfig;
 
 if (process.env.GOOGLE_CREDS) {
-  let firebaseConfig = JSON.parse(process.env.GOOGLE_CREDS);
+  firebaseConfig = JSON.parse(process.env.GOOGLE_CREDS);
 } else {
-  throw("No credentials for firebase...")
+  firebaseConfig = applicationDefault();
 }
 
 const app = initializeApp(firebaseConfig);
