@@ -48,8 +48,6 @@ app.use('/*', cors())
 app.get('/', (c) => c.text('This is the "Where Can I Play?" backend. It is implemented using Hono and nodejs.'))
 
 app.post('/arcades', async(c) => {
-  console.log('hello')
-
   const { gameId } = await c.req.json();
 
   const ref = db.collection('arcades');
