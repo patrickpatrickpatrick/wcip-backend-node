@@ -9,6 +9,10 @@ if (process.env.GOOGLE_CREDS) {
   firebaseConfig = applicationDefault();
 }
 
+console.log(process.env.GOOGLE_CREDS)
+console.log(firebaseConfig)
+console.log('hello why is ith snot working')
+
 const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
