@@ -40,7 +40,7 @@ const accessTokenGetter = async (c) => {
 const app = new Hono()
 
 process.on('uncaughtException', function (err) {
-    console.log(err);
+  console.log(err);
 }); 
 
 app.use('/*', cors())

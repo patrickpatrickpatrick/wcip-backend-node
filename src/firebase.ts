@@ -24,7 +24,7 @@ export const getData = async (ref, query) => {
     };
   }
 
-  let results;
+  let results = [];
 
   snapshot.forEach(doc => {
     results = [ ...results, doc.data() ]

@@ -42,7 +42,6 @@ export const getIgdbToken = (client_id: string, client_secret: string): Promise<
   
 export const gamesApiFetch = async (clientId: string, accessToken: string, query: string) => {
   const gamesQuery = query;
-
   const gameResponse = await fetch(
     `${API_URL}games`,
     requestBuilder(clientId, accessToken, gamesQuery)
