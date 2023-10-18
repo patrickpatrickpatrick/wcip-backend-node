@@ -60,7 +60,7 @@ app.post('/arcades', async(c) => {
 app.post('/games', async(c) => {
   const accessToken = await accessTokenGetter(c);
   const { query } = await c.req.json();
-  const queryIgdb = `search ${query}; fields name,first_release_date,cover;`;
+  const queryIgdb = `search "${query.replaceAll("\"", "")}"; fields name,first_release_date,cover;`;
   const response = await gamesApiFetch(igbdClientID, accessToken, queryIgdb);
 
   return c.json(response);

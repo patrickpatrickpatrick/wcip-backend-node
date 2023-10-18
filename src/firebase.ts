@@ -15,8 +15,6 @@ export const db = getFirestore(app);
 
 export const getData = async (ref, query) => {
 
-  console.log(ref, query)
-
   const snapshot = await ref.where(...query).get()
 
   if (snapshot.empty) {
@@ -26,7 +24,7 @@ export const getData = async (ref, query) => {
     };
   }
 
-  let results = []
+  let results;
 
   snapshot.forEach(doc => {
     results = [ ...results, doc.data() ]
