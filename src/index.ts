@@ -60,7 +60,7 @@ app.post('/arcades', async(c) => {
 app.post('/games', async(c) => {
   const accessToken = await accessTokenGetter(c);
   const { query } = await c.req.json();
-  const queryIgdb = `search "${query.replaceAll("\"", "")}"; fields name,first_release_date,cover;`;
+  const queryIgdb = `search "${query.replaceAll("\"", "")}"; fields name,first_release_date;`;
   const response = await gamesApiFetch(igbdClientID, accessToken, queryIgdb);
 
   return c.json(response);
@@ -69,7 +69,7 @@ app.post('/games', async(c) => {
 app.post('/game/:id', async(c) => {
   const accessToken = await accessTokenGetter(c);
   const id = c.req.param('id');
-  const queryIgdb = `fields name,first_release_date,cover; where id = ${id};`;
+  const queryIgdb = `fields name,first_release_date,cover.*; where id = ${id};`;
   const response = await gamesApiFetch(igbdClientID, accessToken, queryIgdb);
 
   return c.json(response[0]);

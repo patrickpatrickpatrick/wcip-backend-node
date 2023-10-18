@@ -51,30 +51,11 @@ export const gamesApiFetch = async (clientId: string, accessToken: string, query
     return gameResponse;
   }
 
-  const coversIds = gameResponse.results.filter(x => x.cover).map(x => x.cover).join(',')
-  const coverQuery = `fields url; where id = (${coversIds});`
-  let coverResponse;
-
-  if (coversIds && coversIds.length) {
-    coverResponse = await fetch(
-      `${API_URL}covers`,
-      requestBuilder(clientId, accessToken, coverQuery)
-    ).then(res => handleResponse(res));
-
-    if (coverResponse.type == 'error') {
-      console.log("Error occured when trying to fetch covers. Non-blocking error.")
-    }
-  }
-
   return gameResponse.results.reduce((res, game) => {
-    let cover = coverResponse.results.find(x => x.id == game.cover);
     return [
       ...res,
       {
         ...game,
-        ...(
-          cover ? { cover_url: cover.url } : {} 
-        )
       }
     ]
   }, [])
