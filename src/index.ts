@@ -6,6 +6,8 @@ import { serve } from '@hono/node-server'
 import { db, getData } from './firebase';
 import { gamesApiFetch, getIgdbToken } from './utils';
 
+import { getData as getDataSupa } from './supabase';
+
 const igbdClientID = process.env.IGDB_ID;
 const igbdClientSecret = process.env.IGDB_SECRET;
 
@@ -57,6 +59,15 @@ app.post('/arcades', async(c) => {
   return c.json(response);
 })
 
+app.post('/arcades', async(c) => {
+  const { gameId } = await c.req.json();
+
+  const response = await getDataSupa(
+    'games_to_arcades', gameId
+  )
+})
+
+
 app.post('/games', async(c) => {
   const accessToken = await accessTokenGetter(c);
   const { query } = await c.req.json();
@@ -74,6 +85,22 @@ app.post('/game/:id', async(c) => {
 
   return c.json(response[0]);
 })
+
+app.post('/locations', async(c) => {    
+  const { query } = await c.req.json();
+
+  const refStates = db.collection('states');
+  const refCountries = db.collection('countries')
+
+  const statesResponse = await getData(
+    refStates, []); 
+  const countriesResponse = await getData(
+    refCountries, []
+  )
+
+  return c.json(response[0]);
+})
+
 
 let port = 3000;
  
