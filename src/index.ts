@@ -3,10 +3,9 @@ import { cors } from 'hono/cors'
 import { getCookie, setCookie } from 'hono/cookie'
 import { serve } from '@hono/node-server'
 
-import { db, getData } from './firebase';
 import { gamesApiFetch, getIgdbToken } from './utils';
 
-import { getData as getDataSupa } from './supabase';
+import { getGameData, getLocationData } from './supabase';
 
 const igbdClientID = process.env.IGDB_ID;
 const igbdClientSecret = process.env.IGDB_SECRET;
@@ -43,30 +42,48 @@ const app = new Hono()
 
 process.on('uncaughtException', function (err) {
   console.log(err);
-}); 
+});
 
 app.use('/*', cors())
 
 app.get('/', (c) => c.text('This is the "Where Can I Play?" backend. It is implemented using Hono and nodejs.'))
 
 app.post('/arcades', async(c) => {
-  const { gameId } = await c.req.json();
+  const { gameId, regionId, cityId, countryId } = await c.req.json();
 
-  const ref = db.collection('arcades');
-  const response = await getData(
-    ref, ['games', 'array-contains-any', [parseInt(gameId)]]);
+  const { data, error } = await getGameData(gameId, { regionId, cityId, countryId });
+
+  if (data) {
+
+    // i dunno if there's way to actually get the flattened
+    // response from supabase? guess i have to do it here!
+    // one more reason to eventually just use my own API i
+    // guess...
+    // https://github.com/orgs/supabase/discussions/6874
+
+
+    console.log(data)
+
+    return c.json(data.map(({ arcade }) => ({
+      ...arcade,
+      games: arcade.games.map(game => game.game_id),
+      address: {
+        ...arcade.address[0],
+        city: arcade.address[0].city,
+      }
+    })));
+  } else if (error) {
+    return c.json(error);
+  }
+})
+
+app.post('/locations', async (c) => {
+  const { query } = await c.req.json();
+
+  const response = await getLocationData(query);
 
   return c.json(response);
 })
-
-app.post('/arcades', async(c) => {
-  const { gameId } = await c.req.json();
-
-  const response = await getDataSupa(
-    'games_to_arcades', gameId
-  )
-})
-
 
 app.post('/games', async(c) => {
   const accessToken = await accessTokenGetter(c);
@@ -86,24 +103,8 @@ app.post('/game/:id', async(c) => {
   return c.json(response[0]);
 })
 
-app.post('/locations', async(c) => {    
-  const { query } = await c.req.json();
-
-  const refStates = db.collection('states');
-  const refCountries = db.collection('countries')
-
-  const statesResponse = await getData(
-    refStates, []); 
-  const countriesResponse = await getData(
-    refCountries, []
-  )
-
-  return c.json(response[0]);
-})
-
-
 let port = 3000;
- 
+
 if (process.env.PORT) {
   port = parseInt(process.env.PORT);
 }
