@@ -56,21 +56,7 @@ app.post('/arcades', async(c) => {
   const data = await getGameData(gameId, { regionId, cityId, countryId });
 
   if (data) {
-
-    // i dunno if there's way to actually get the flattened
-    // response from supabase? guess i have to do it here!
-    // one more reason to eventually just use my own API i
-    // guess...
-    // https://github.com/orgs/supabase/discussions/6874
-
-    return c.json(data.map(({ arcade }) => ({
-      ...arcade,
-      games: arcade.games.map(game => game.game_id),
-      address: {
-        ...arcade.address[0],
-        city: arcade.address[0].city,
-      }
-    })));
+    return c.json(data);
   }
 })
 

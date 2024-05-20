@@ -18,24 +18,24 @@ const supabase = createClient<Database>(supabaseUrl, SUPABASE_KEY);
 
 type dbType = 'country' | 'games_to_arcades' | 'region' | 'city'
 
-const queryBuilder = (db: dbType) => {
-  return {
-    games_to_arcades: supabase
-      .from('games_to_arcades')
-      .select(`arcade!inner ( id, lat, lng, name, osm_id, games:games_to_arcades ( game_id ), address!inner ( road, postcode, house_number, city!inner ( name, id ), region!inner ( code, name, country!inner ( code, name ) ) ) )`),
-    country: supabase
-      .from('country')
-      .select(`name, code`),
-    city: supabase
-      .from('city')
-      .select(`id, name`),
-    region: supabase
-      .from('region')
-      .select(`name, code`)
-  }[db]
-}
+// const queryBuilder = (db: dbType) => {
+//   return {
+//     games_to_arcades: supabase
+//       .from('games_to_arcades')
+//       .select(`arcade!inner ( id, lat, lng, name, osm_id, games:games_to_arcades ( game_id ), address!inner ( road, postcode, house_number, city!inner ( name, id ), region!inner ( code, name, country!inner ( code, name ) ) ) )`),
+//     country: supabase
+//       .from('country')
+//       .select(`name, code`),
+//     city: supabase
+//       .from('city')
+//       .select(`id, name`),
+//     region: supabase
+//       .from('region')
+//       .select(`name, code`)
+//   }[db]
+// }
 
-const getDataQuery = (db: dbType) => {
+// const getDataQuery = (db: dbType) => {
   // const { regionId, countryId, cityId } = filter;
 
   // let query = supabase
@@ -43,8 +43,8 @@ const getDataQuery = (db: dbType) => {
     // .select(selects[db] as '*')
 
   // https://github.com/supabase/supabase-js/issues/551
-  let query = queryBuilder(db);
-  type queryType = QueryData<typeof query>
+  // let query = queryBuilder(db);
+  // type queryType = QueryData<typeof query>
   
   // if (regionId) {
   //   query = query.eq('code', regionId)
@@ -67,13 +67,13 @@ const getDataQuery = (db: dbType) => {
   //   query = query.eq(column, value);
   // }
 
-  return query;
+  // return query;
 
   // const { data, error } = await query;
   // if (error) throw error
   // const returnData: queryType = data;
   // return returnData;
-}
+// }
 
 // export const getLocationData = async (query: string) => {
 //   // const countryResponse = getData('country')('name', query);
@@ -98,21 +98,16 @@ interface gameFilter {
   cityId?: number,
 }
 
-interface gameQuery {
-  game_id: number,
-  db: 'games'
-}
-
 export const getGameData = async (game_id: number, filter: gameFilter) => {
   const { regionId, countryId, cityId } = filter;
-  
-  let query = supabase
-    .from('games_to_arcades')
-    .select(`arcade!inner ( id, lat, lng, name, osm_id, games:games_to_arcades ( game_id ), address!inner ( road, postcode, house_number, city!inner ( name, id ), region!inner ( code, name, country!inner ( code, name ) ) ) )`)
 
-  
+  let query = supabase
+    .from('arcade')
+    .select(`*, games_to_arcades!inner(game_id), ...address(*, ...region(*, ...country(*)))`)
+    .eq('games_to_arcades.game_id', game_id)
+
   if (regionId) {
-    query = query.eq('code', regionId)
+    query = query.eq('code', regionId)  
   }
 
   if (countryId) {
@@ -124,6 +119,11 @@ export const getGameData = async (game_id: number, filter: gameFilter) => {
   }  
 
   const { data, error } = await query;
+
+  // better way of debugging
+  // have to find :)
+  console.log(error)
+
   if (error) throw error
   return data;
 }
