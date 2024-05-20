@@ -6,148 +6,188 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      addresses: {
+      address: {
         Row: {
-          country_id: number | null
+          arcade_id: number | null
+          city: number | null
           created_at: string
-          house_number: number | null
+          house_number: string | null
           id: number
-          leisure: string | null
-          neighbourhood: string | null
+          iso_code: string | null
           postcode: string | null
           road: string | null
-          state_id: number | null
-          suburb: string | null
         }
         Insert: {
-          country_id?: number | null
+          arcade_id?: number | null
+          city?: number | null
           created_at?: string
-          house_number?: number | null
+          house_number?: string | null
           id?: number
-          leisure?: string | null
-          neighbourhood?: string | null
+          iso_code?: string | null
           postcode?: string | null
           road?: string | null
-          state_id?: number | null
-          suburb?: string | null
         }
         Update: {
-          country_id?: number | null
+          arcade_id?: number | null
+          city?: number | null
           created_at?: string
-          house_number?: number | null
+          house_number?: string | null
           id?: number
-          leisure?: string | null
-          neighbourhood?: string | null
+          iso_code?: string | null
           postcode?: string | null
           road?: string | null
-          state_id?: number | null
-          suburb?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "addresses_country_id_fkey"
-            columns: ["country_id"]
-            referencedRelation: "countries"
+            foreignKeyName: "address_arcade_id_fkey"
+            columns: ["arcade_id"]
+            isOneToOne: false
+            referencedRelation: "arcade"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "addresses_state_id_fkey"
-            columns: ["state_id"]
-            referencedRelation: "states"
+            foreignKeyName: "address_city_fkey"
+            columns: ["city"]
+            isOneToOne: false
+            referencedRelation: "city"
             referencedColumns: ["id"]
-          }
+          },
+          {
+            foreignKeyName: "address_iso_code_fkey"
+            columns: ["iso_code"]
+            isOneToOne: false
+            referencedRelation: "region"
+            referencedColumns: ["code"]
+          },
         ]
       }
-      arcades: {
+      arcade: {
         Row: {
-          address_id: number | null
           created_at: string
-          games: Json | null
           id: number
           lat: number | null
           lng: number | null
           name: string | null
           osm_id: number | null
-          place_id: number | null
         }
         Insert: {
-          address_id?: number | null
           created_at?: string
-          games?: Json | null
           id?: number
           lat?: number | null
           lng?: number | null
           name?: string | null
           osm_id?: number | null
-          place_id?: number | null
         }
         Update: {
-          address_id?: number | null
           created_at?: string
-          games?: Json | null
           id?: number
           lat?: number | null
           lng?: number | null
           name?: string | null
           osm_id?: number | null
-          place_id?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "arcades_address_id_fkey"
-            columns: ["address_id"]
-            referencedRelation: "addresses"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
-      countries: {
+      city: {
         Row: {
           created_at: string
           id: number
           name: string | null
+          region_code: string | null
         }
         Insert: {
           created_at?: string
           id?: number
           name?: string | null
+          region_code?: string | null
         }
         Update: {
           created_at?: string
           id?: number
+          name?: string | null
+          region_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_region_code_fkey"
+            columns: ["region_code"]
+            isOneToOne: false
+            referencedRelation: "region"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      country: {
+        Row: {
+          code: string
+          name: string | null
+        }
+        Insert: {
+          code: string
+          name?: string | null
+        }
+        Update: {
+          code?: string
           name?: string | null
         }
         Relationships: []
       }
-      states: {
+      games_to_arcades: {
         Row: {
-          country_id: number | null
+          arcade_id: number | null
           created_at: string
+          game_id: number | null
           id: number
+        }
+        Insert: {
+          arcade_id?: number | null
+          created_at?: string
+          game_id?: number | null
+          id?: number
+        }
+        Update: {
+          arcade_id?: number | null
+          created_at?: string
+          game_id?: number | null
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_to_arcades_arcade_id_fkey"
+            columns: ["arcade_id"]
+            isOneToOne: false
+            referencedRelation: "arcade"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      region: {
+        Row: {
+          code: string
+          country_code: string | null
           name: string | null
         }
         Insert: {
-          country_id?: number | null
-          created_at?: string
-          id?: number
+          code: string
+          country_code?: string | null
           name?: string | null
         }
         Update: {
-          country_id?: number | null
-          created_at?: string
-          id?: number
+          code?: string
+          country_code?: string | null
           name?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "states_country_id_fkey"
-            columns: ["country_id"]
-            referencedRelation: "countries"
-            referencedColumns: ["id"]
-          }
+            foreignKeyName: "region_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country"
+            referencedColumns: ["code"]
+          },
         ]
       }
     }
@@ -165,3 +205,85 @@ export interface Database {
     }
   }
 }
+
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never

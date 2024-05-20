@@ -5,20 +5,23 @@ import { serve } from '@hono/node-server'
 
 import { gamesApiFetch, getIgdbToken } from './utils';
 
-import { getGameData, getLocationData } from './supabase';
+import { getGameData } from './supabase';
 
-const igbdClientID = process.env.IGDB_ID;
-const igbdClientSecret = process.env.IGDB_SECRET;
+const { SUPABASE_KEY, IGDB_SECRET, IGDB_ID } = process.env;
 
-if (!(igbdClientID && igbdClientSecret)) {
-  throw "Provide a clientID and clientSecret for IGDBB."
+if (!(IGDB_ID && IGDB_SECRET)) {
+  throw "Provide a clientID and clientSecret for IGDB!!"
+}
+
+if (!SUPABASE_KEY) {
+  throw "Provide a key for Supabase!!"
 }
 
 const accessTokenGetter = async (c) => {
   let accessToken = getCookie(c, "igdb_access_token");
 
   if (!accessToken) {
-    const { access_token, expires_in  } = await getIgdbToken(igbdClientID, igbdClientSecret);
+    const { access_token, expires_in  } = await getIgdbToken(IGDB_ID, IGDB_SECRET);
     const expire_date = new Date();
 
     expire_date.setSeconds(expire_date.getSeconds() + parseInt(expires_in))
@@ -50,8 +53,7 @@ app.get('/', (c) => c.text('This is the "Where Can I Play?" backend. It is imple
 
 app.post('/arcades', async(c) => {
   const { gameId, regionId, cityId, countryId } = await c.req.json();
-
-  const { data, error } = await getGameData(gameId, { regionId, cityId, countryId });
+  const data = await getGameData(gameId, { regionId, cityId, countryId });
 
   if (data) {
 
@@ -61,9 +63,6 @@ app.post('/arcades', async(c) => {
     // guess...
     // https://github.com/orgs/supabase/discussions/6874
 
-
-    console.log(data)
-
     return c.json(data.map(({ arcade }) => ({
       ...arcade,
       games: arcade.games.map(game => game.game_id),
@@ -72,24 +71,22 @@ app.post('/arcades', async(c) => {
         city: arcade.address[0].city,
       }
     })));
-  } else if (error) {
-    return c.json(error);
   }
 })
 
-app.post('/locations', async (c) => {
-  const { query } = await c.req.json();
+// app.post('/locations', async (c) => {
+//   const { query } = await c.req.json();
 
-  const response = await getLocationData(query);
+//   const response = await getLocationData(query);
 
-  return c.json(response);
-})
+//   return c.json(response);
+// })
 
 app.post('/games', async(c) => {
   const accessToken = await accessTokenGetter(c);
   const { query } = await c.req.json();
   const queryIgdb = `search "${query.replaceAll("\"", "")}"; fields name,first_release_date;`;
-  const response = await gamesApiFetch(igbdClientID, accessToken, queryIgdb);
+  const response = await gamesApiFetch(IGDB_ID, accessToken, queryIgdb);
 
   return c.json(response);
 })
@@ -98,7 +95,7 @@ app.post('/game/:id', async(c) => {
   const accessToken = await accessTokenGetter(c);
   const id = c.req.param('id');
   const queryIgdb = `fields name,first_release_date,cover.*; where id = ${id};`;
-  const response = await gamesApiFetch(igbdClientID, accessToken, queryIgdb);
+  const response = await gamesApiFetch(IGDB_ID, accessToken, queryIgdb);
 
   return c.json(response[0]);
 })
