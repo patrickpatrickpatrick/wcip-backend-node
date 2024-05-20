@@ -60,14 +60,6 @@ app.post('/arcades', async(c) => {
   }
 })
 
-// app.post('/locations', async (c) => {
-//   const { query } = await c.req.json();
-
-//   const response = await getLocationData(query);
-
-//   return c.json(response);
-// })
-
 app.post('/games', async(c) => {
   const accessToken = await accessTokenGetter(c);
   const { query } = await c.req.json();
