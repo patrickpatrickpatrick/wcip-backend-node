@@ -23,7 +23,7 @@ export const getGameData = async (game_id: number, filter: gameFilter) => {
 
   let query = supabase
     .from('arcade')
-    .select(`*, games_to_arcades!inner(game_id), ...address(*, ...region(*, ...country(*)))`)
+    .select(`*, games_to_arcades!inner(game_id), ...address(*, ...city(*, ...region(*, ...country(*))))`)
     .eq('games_to_arcades.game_id', game_id)
 
   if (regionId) {
